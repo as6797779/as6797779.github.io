@@ -155,17 +155,16 @@ const nextChapter = () => {
   }
 }
 
-// 8. 生成新小说（模拟请求后端）
+// 8. 生成新小说章节（模拟请求后端）
 const generateNewNovel = () => {
-  // 模拟向后端发起请求：POST /api/novel/generate
-  console.log('[临时API] 生成新小说：POST /api/novel/generate')
+  // 模拟向后端发起请求：POST /api/novel/generateChapter
+  console.log('[临时API] 生成新小说：POST /api/novel/generateChapter')
   
   // 模拟生成结果
-  const newNovelTitle = `《新小说_${Date.now().toString().slice(-4)}》`
   ElMessage?.({
     type: 'info',
-    message: `已生成新小说：${newNovelTitle}（后端开发中，暂未入库）`
-  }) || alert(`已生成新小说：${newNovelTitle}（后端开发中，暂未入库）`)
+    message: `已生成小说章节：${newNovelTitle}（后端开发中，暂未入库）`
+  }) || alert(`已生成小说章节：${newNovelTitle}（后端开发中，暂未入库）`)
 }
 
 // 9. 删除新章节（模拟请求后端）
