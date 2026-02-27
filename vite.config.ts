@@ -8,7 +8,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 
 // 仓库名（若仓库名是 xxx.github.io，base 设为 '/'；否则设为 '/仓库名/'）
-const base = process.env.NODE_ENV === 'production' ? '/as6797779.github.git.io/' : '/'
+const base = process.env.NODE_ENV = '/'
 
 // https://vite.dev/config/
 export default defineConfig({
