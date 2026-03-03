@@ -2,7 +2,7 @@
   <div class="writing-novel">
     <!-- 页面标题 -->
     <h1>📖 写作广场 - 小说创作</h1>
-
+    
     <!-- 右上角新增小说按钮 -->
     <button class="add-novel-btn" @click="showAddNovelDialog = true">
       + 新增小说
@@ -134,10 +134,10 @@ const novelList = reactive([
   }
 ])
 
-// 2. 响应式变量：当前选中的小说ID、章节索引、章节列表
-const activeNovelId = ref(null) // 当前选中的小说ID
+// 2. 响应式变量：当前选中的小说 ID、章节索引、章节列表
+const activeNovelId = ref(null) // 当前选中的小说 ID
 const activeNovel = ref({}) // 当前选中的小说详情
-const activeChapterIndex = ref(-1) // 当前选中的章节索引（-1表示未选中）
+const activeChapterIndex = ref(-1) // 当前选中的章节索引（-1 表示未选中）
 const chapterList = reactive([]) // 当前小说的章节列表
 
 // 新增小说弹窗相关变量
@@ -150,7 +150,7 @@ const newNovelForm = reactive({
 // 3. 选中小说（点击小说列表项）
 const selectNovel = (novelId) => {
   activeNovelId.value = novelId
-  // 模拟根据小说ID请求后端获取小说详情
+  // 模拟根据小说 ID 请求后端获取小说详情
   activeNovel.value = novelList.find(item => item.id === novelId) || {}
   // 重置章节选中状态
   activeChapterIndex.value = -1
