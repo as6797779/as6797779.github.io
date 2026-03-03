@@ -93,7 +93,7 @@
             :class="{ active: $route.name === 'writingNovel' }"
             @click="handleSubmenuClick('writingNovel')"
           >
-            诗歌创作
+            小说创作
           </li>
         </ul>
       </li>

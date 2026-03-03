@@ -1,7 +1,11 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router' // 改用 createWebHashHistory
+// 若坚持用 history 模式，需额外配置 404 页面（下文补充）
+// import { createRouter, createWebHistory } from 'vue-router'
+
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+    history: createWebHashHistory(import.meta.env.BASE_URL), 
+  // history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     // 根路径重定向到教育广场首页
     {

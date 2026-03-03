@@ -12,6 +12,13 @@
 <script setup>
 // 导入左侧导航组件
 import Sidebar from './components/Sidebar.vue'
+
+//公共方法
+const formatDate = (dateStr) => {
+  if (!dateStr) return ''
+  // 替换 T 为空格，并去除毫秒部分（如果有）
+  return dateStr.replace('T', ' ').split('.')[0]
+}
 </script>
 
 <style scoped>
