@@ -2,6 +2,11 @@
   <div class="writing-novel">
     <!-- 页面标题 -->
     <h1>📖 写作广场 - 小说创作</h1>
+    
+    <!-- 右上角新增小说按钮 -->
+    <button class="add-novel-btn" @click="showAddNovelDialog = true">
+      + 新增小说
+    </button>
 
     <!-- 小说列表区域 -->
     <div class="novel-list-section">
@@ -68,6 +73,38 @@
         </div>
       </div>
     </div>
+
+    <!-- 新增小说弹窗 -->
+    <div class="dialog-overlay" v-if="showAddNovelDialog" @click.self="showAddNovelDialog = false">
+      <div class="dialog-content">
+        <h3>📝 创建新小说</h3>
+        <div class="form-group">
+          <label for="novel-title">小说标题</label>
+          <input 
+            id="novel-title"
+            v-model="newNovelForm.title" 
+            type="text" 
+            placeholder="请输入小说标题"
+            maxlength="50"
+          />
+          <div class="char-count">{{ newNovelForm.title.length }}/50</div>
+        </div>
+        <div class="form-group">
+          <label for="novel-outline">小说大纲</label>
+          <textarea 
+            id="novel-outline"
+            v-model="newNovelForm.outline" 
+            placeholder="请输入小说大纲（支持大文本量，建议 500-2000 字）"
+            rows="10"
+          ></textarea>
+          <div class="char-count">{{ newNovelForm.outline.length }} 字</div>
+        </div>
+        <div class="dialog-actions">
+          <button class="cancel-btn" @click="showAddNovelDialog = false">取消</button>
+          <button class="submit-btn" @click="submitNewNovel">提交创建</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -97,16 +134,23 @@ const novelList = reactive([
   }
 ])
 
-// 2. 响应式变量：当前选中的小说ID、章节索引、章节列表
-const activeNovelId = ref(null) // 当前选中的小说ID
+// 2. 响应式变量：当前选中的小说 ID、章节索引、章节列表
+const activeNovelId = ref(null) // 当前选中的小说 ID
 const activeNovel = ref({}) // 当前选中的小说详情
-const activeChapterIndex = ref(-1) // 当前选中的章节索引（-1表示未选中）
+const activeChapterIndex = ref(-1) // 当前选中的章节索引（-1 表示未选中）
 const chapterList = reactive([]) // 当前小说的章节列表
+
+// 新增小说弹窗相关变量
+const showAddNovelDialog = ref(false) // 弹窗显示状态
+const newNovelForm = reactive({
+  title: '',
+  outline: ''
+})
 
 // 3. 选中小说（点击小说列表项）
 const selectNovel = (novelId) => {
   activeNovelId.value = novelId
-  // 模拟根据小说ID请求后端获取小说详情
+  // 模拟根据小说 ID 请求后端获取小说详情
   activeNovel.value = novelList.find(item => item.id === novelId) || {}
   // 重置章节选中状态
   activeChapterIndex.value = -1
@@ -189,6 +233,40 @@ const deleteNewChapter = () => {
     message: '已删除选中的新章节（模拟操作）'
   }) || alert('已删除选中的新章节（模拟操作）')
 }
+
+// 10. 提交新小说
+const submitNewNovel = () => {
+  // 表单验证
+  if (!newNovelForm.title.trim()) {
+    ElMessage?.({ type: 'warning', message: '请输入小说标题' }) || alert('请输入小说标题')
+    return
+  }
+  if (!newNovelForm.outline.trim()) {
+    ElMessage?.({ type: 'warning', message: '请输入小说大纲' }) || alert('请输入小说大纲')
+    return
+  }
+  if (newNovelForm.outline.length < 50) {
+    ElMessage?.({ type: 'warning', message: '小说大纲至少需要 50 字' }) || alert('小说大纲至少需要 50 字')
+    return
+  }
+
+  // 模拟向后端发起请求：POST /api/novel/create
+  console.log('[临时API] 创建新小说：POST /api/novel/create', {
+    title: newNovelForm.title,
+    outline: newNovelForm.outline
+  })
+
+  // 模拟提交成功
+  ElMessage?.({
+    type: 'success',
+    message: `《${newNovelForm.title}》创建成功，正在生成中...`
+  }) || alert(`《${newNovelForm.title}》创建成功，正在生成中...`)
+
+  // 重置表单并关闭弹窗
+  newNovelForm.title = ''
+  newNovelForm.outline = ''
+  showAddNovelDialog.value = false
+}
 </script>
 
 <style scoped>
@@ -197,6 +275,7 @@ const deleteNewChapter = () => {
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  position: relative; /* 为绝对定位按钮提供参考 */
 }
 
 .writing-novel h1 {
@@ -204,6 +283,32 @@ const deleteNewChapter = () => {
   margin-bottom: 20px;
   border-bottom: 2px solid #9b59b6;
   padding-bottom: 10px;
+}
+
+/* 右上角新增按钮 */
+.add-novel-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+}
+
+.add-novel-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
+}
+
+.add-novel-btn:active {
+  transform: translateY(0);
 }
 
 /* 小说列表区域 */
@@ -386,5 +491,147 @@ const deleteNewChapter = () => {
   border-color: #ccc;
   color: #ccc;
   cursor: not-allowed;
+}
+
+/* 弹窗遮罩层 */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 弹窗内容 */
+.dialog-content {
+  background-color: #fff;
+  padding: 35px;
+  border-radius: 16px;
+  width: 550px;
+  max-width: 90%;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.dialog-content h3 {
+  color: #2c3e50;
+  margin-bottom: 25px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* 表单组 */
+.form-group {
+  margin-bottom: 22px;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #9b59b6;
+  box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 180px;
+  line-height: 1.6;
+}
+
+/* 字数统计 */
+.char-count {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  color: #999;
+  font-size: 12px;
+}
+
+/* 弹窗操作按钮 */
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.dialog-actions button {
+  padding: 11px 28px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.cancel-btn:hover {
+  background-color: #e5e5e5;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(155, 89, 182, 0.4);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
 }
 </style>
