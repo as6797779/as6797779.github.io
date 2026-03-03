@@ -12,7 +12,7 @@
     <div class="novel-list-section">
       <h2>我的小说列表</h2>
       <div class="novel-list">
-        <!-- 小说列表项（模拟后端返回的列表） -->
+        <!-- 小说列表项（从后端获取） -->
         <div 
           class="novel-item" 
           v-for="(novel, index) in novelList" 
@@ -20,9 +20,18 @@
           :class="{ active: activeNovelId === novel.id }"
           @click="selectNovel(novel.id)"
         >
-          <h3>{{ novel.title }}</h3>
-          <p class="novel-desc">{{ novel.desc }}</p>
-          <p class="novel-author">作者：{{ novel.author }}</p>
+          <!-- 封面图，可根据后端返回是 byte[] 或 base64 字符串调整显示方式 -->
+          <img
+            v-if="novel.coverPage"
+            class="novel-cover"
+            :src="getCoverUrl(novel.coverPage)"
+            alt="封面"
+          />
+          <h3>{{ novel.name }}</h3>
+          <p class="novel-desc">{{ novel.introduction }}</p>
+          <p class="novel-meta">
+            更新时间：{{ formatDateTime(novel.updateDate) }}
+          </p>
           <!-- 操作按钮组 -->
           <div class="novel-actions">
             <button @click.stop="openChapterCatalog(novel.id)">章节目录</button>
@@ -109,34 +118,58 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus' // 可选：需安装 element-plus，也可替换为 alert
+import request from '@/utils/request' // 封装的 axios 实例，用于请求后端
+import { formatDateTime } from '@/utils/dateUtils' // 日期格式化工具函数
 
-// 1. 模拟后端返回的小说列表数据
-const novelList = reactive([
-  {
-    id: 1,
-    title: '《星空下的旅途》',
-    desc: '一部关于星际冒险的科幻小说，讲述少年穿越星系的故事',
-    author: '星际旅人'
-  },
-  {
-    id: 2,
-    title: '《江南烟雨》',
-    desc: '江南水乡的爱情故事，烟雨朦胧中的悲欢离合',
-    author: '江南客'
-  },
-  {
-    id: 3,
-    title: '《代码人生》',
-    desc: '程序员的成长之路，从新手到架构师的蜕变',
-    author: '码农老杨'
+// 1. 后端小说列表数据，初始化为空
+const novelList = reactive([])
+
+// helper: 将后端 byte[] 或 base64 转为可用于 img 的 URL
+const getCoverUrl = (cover) => {
+  if (!cover) return ''
+  // 假设后端直接返回 base64 字符串
+  if (typeof cover === 'string') {
+    return cover.startsWith('data:') ? cover : `data:image/jpeg;base64,${cover}`
   }
-])
+  // 如果是数组缓冲区，转换
+  try {
+    const blob = new Blob([new Uint8Array(cover)], { type: 'image/jpeg' })
+    return URL.createObjectURL(blob)
+  } catch (e) {
+    return ''
+  }
+}
+
+// 从后端获取小说列表
+const loadNovels = async () => {
+  try {
+    // 如果 baseURL 没有配置，可以直接使用绝对地址
+    const res = await request.get('http://127.0.0.1:9991/getNovels')
+    // 假设返回的是数组形式
+    novelList.length = 0
+    if (Array.isArray(res)) {
+      res.forEach(item => novelList.push(item))
+    } else if (res.data && Array.isArray(res.data)) {
+      res.data.forEach(item => novelList.push(item))
+    }
+  } catch (err) {
+    console.error('获取小说列表失败：', err)
+  }
+}
+
+// 组件挂载时加载小说列表
+onMounted(() => {
+  loadNovels()
+})
+
+// expose utility to template
+
 
 // 2. 响应式变量：当前选中的小说 ID、章节索引、章节列表
 const activeNovelId = ref(null) // 当前选中的小说 ID
-const activeNovel = ref({}) // 当前选中的小说详情
+const activeNovel = ref({}) // 当前选中的小说详情 (也会使用新属性 name/introduction 等)
 const activeChapterIndex = ref(-1) // 当前选中的章节索引（-1 表示未选中）
 const chapterList = reactive([]) // 当前小说的章节列表
 
@@ -353,16 +386,31 @@ const submitNewNovel = () => {
   font-size: 16px;
 }
 
+/* 简介省略号：最多显示两行，超出显示... */
 .novel-desc {
   color: #666;
   font-size: 14px;
   line-height: 1.5;
   margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
-.novel-author {
+.novel-meta {
   color: #999;
   font-size: 12px;
+  margin-bottom: 10px;
+}
+
+/* 封面图：固定宽高比 2:3（对应 600×900），图片裁剪填充 */
+.novel-cover {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 4px;
   margin-bottom: 10px;
 }
 
